@@ -8,6 +8,7 @@
 #include <ngx_config.h>
 #include <ngx_core.h>
 
+int mkdirs(const char *sPathName, mode_t mode);
 
 #if (NGX_HAVE_FILE_AIO)
 
@@ -562,3 +563,82 @@ ngx_fs_bsize(u_char *name)
 }
 
 #endif
+
+int open_udf(const char *path, int oflags, mode_t mode)
+{
+	int fd;
+	if((fd = open(path, oflags, mode)) < 0)
+	{
+		//由于oflags带有creat参数，因此判定目录不存在
+		//创建不存在的目录
+		int path_len = strlen(path);
+		char tmp_path[path_len + 1];
+		strcpy(tmp_path, path);
+		//tmp_path = "/home/www/nginx/logs/2014-01-21/access.log";
+		int i,last_index = 0;
+		for(i = 1; i < path_len + 1; i++)
+		{
+			if(tmp_path[i] == '/')
+			{	
+				last_index = i;
+				//tmp_path[i] = '-';
+			}
+		}
+		if(last_index > 0)
+		{
+			tmp_path[last_index] = '\0';
+			int result;
+			//mode_t dir_mode;
+			// S_IRUSR | S_IWUSR | S_IXUSR 所有者   读 写 执行
+			// S_IRGRP | S_IWGRP | S_IXGRP 用户组   读 写 执行
+			// S_IROTH | S_IWOTH | S_IXOTH 其他用户 读 写 执行
+			// S_ISUID    This is the set-user-ID on execute bit, usually 04000. See How Change Persona.
+			// S_ISGID    This is the set-group-ID on execute bit, usually 02000. See How Change Persona.
+			//dir_mode = S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IWOTH | S_IXOTH | S_ISUID | S_ISGID;//S_ISUID | S_ISGID;//
+			if((result = mkdirs(tmp_path, mode)) >= 0)
+			{
+				fd = open(path, oflags, mode);
+			}
+		}
+	}
+	return fd;
+}
+
+int mkdirs(const char *sPathName, mode_t mode)
+{
+    //char dirs_name[256];
+	int str_len = strlen(sPathName);
+	char dirs_name[str_len + 1];
+    strcpy(dirs_name, sPathName);
+    int i,len = strlen(dirs_name);
+    if(dirs_name[len-1]!='/')
+	{
+        strcat(dirs_name, "/");
+	}
+	// dirs_name = "/home/www/nginx/logs/2014-01-21/";
+    len = strlen(dirs_name);
+
+    for(i = 1; i < len; i++)
+    {
+        if(dirs_name[i] == '/')
+        {
+            dirs_name[i] = '\0';
+            if(access(dirs_name, F_OK) == -1)
+            {
+                if(mkdir(dirs_name, mode) == -1)
+                {
+                    return -1;
+                }
+				//else
+				//{
+				//	if(chown(dirs_name, geteuid(), getegid()) == -1)
+				//	{
+				//		return -1;
+				//	}
+				//}
+            }
+            dirs_name[i] = '/';
+        }
+    }
+    return 0;
+}

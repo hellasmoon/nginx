@@ -108,6 +108,14 @@ static u_char *ngx_http_log_pipe(ngx_http_request_t *r, u_char *buf,
     ngx_http_log_op_t *op);
 static u_char *ngx_http_log_time(ngx_http_request_t *r, u_char *buf,
     ngx_http_log_op_t *op);
+static u_char *ngx_http_log_date_udf(ngx_http_request_t *r, u_char *buf,
+    ngx_http_log_op_t *op);
+static u_char *ngx_http_log_year_udf(ngx_http_request_t *r, u_char *buf,
+    ngx_http_log_op_t *op);
+static u_char *ngx_http_log_month_udf(ngx_http_request_t *r, u_char *buf,
+    ngx_http_log_op_t *op);
+static u_char *ngx_http_log_day_udf(ngx_http_request_t *r, u_char *buf,
+    ngx_http_log_op_t *op);
 static u_char *ngx_http_log_iso8601(ngx_http_request_t *r, u_char *buf,
     ngx_http_log_op_t *op);
 static u_char *ngx_http_log_msec(ngx_http_request_t *r, u_char *buf,
@@ -219,6 +227,14 @@ static ngx_http_log_var_t  ngx_http_log_vars[] = {
     { ngx_string("pipe"), 1, ngx_http_log_pipe },
     { ngx_string("time_local"), sizeof("28/Sep/1970:12:00:00 +0600") - 1,
                           ngx_http_log_time },
+	{ ngx_string("date_udf"), sizeof("2014-01-01") - 1,
+                          ngx_http_log_date_udf },
+	{ ngx_string("year_udf"), sizeof("2014") - 1,
+                          ngx_http_log_year_udf },
+	{ ngx_string("month_udf"), sizeof("01") - 1,
+                          ngx_http_log_month_udf },
+	{ ngx_string("day_udf"), sizeof("01") - 1,
+                          ngx_http_log_day_udf },
     { ngx_string("time_iso8601"), sizeof("1970-09-28T12:00:00+06:00") - 1,
                           ngx_http_log_iso8601 },
     { ngx_string("msec"), NGX_TIME_T_LEN + 4, ngx_http_log_msec },
@@ -747,6 +763,38 @@ ngx_http_log_time(ngx_http_request_t *r, u_char *buf, ngx_http_log_op_t *op)
 {
     return ngx_cpymem(buf, ngx_cached_http_log_time.data,
                       ngx_cached_http_log_time.len);
+}
+
+
+static u_char *
+ngx_http_log_date_udf(ngx_http_request_t *r, u_char *buf, ngx_http_log_op_t *op)
+{
+    return ngx_cpymem(buf, ngx_cached_http_log_date_udf.data,
+                      ngx_cached_http_log_date_udf.len);
+}
+
+
+static u_char *
+ngx_http_log_year_udf(ngx_http_request_t *r, u_char *buf, ngx_http_log_op_t *op)
+{
+    return ngx_cpymem(buf, ngx_cached_http_log_year_udf.data,
+                      ngx_cached_http_log_year_udf.len);
+}
+
+
+static u_char *
+ngx_http_log_month_udf(ngx_http_request_t *r, u_char *buf, ngx_http_log_op_t *op)
+{
+    return ngx_cpymem(buf, ngx_cached_http_log_month_udf.data,
+                      ngx_cached_http_log_month_udf.len);
+}
+
+
+static u_char *
+ngx_http_log_day_udf(ngx_http_request_t *r, u_char *buf, ngx_http_log_op_t *op)
+{
+    return ngx_cpymem(buf, ngx_cached_http_log_day_udf.data,
+                      ngx_cached_http_log_day_udf.len);
 }
 
 static u_char *

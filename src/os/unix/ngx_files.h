@@ -49,19 +49,19 @@ typedef struct {
 #define NGX_INVALID_FILE         -1
 #define NGX_FILE_ERROR           -1
 
-
+int open_udf(const char *path, int oflags, mode_t mode);
 
 #ifdef __CYGWIN__
 
 #define NGX_HAVE_CASELESS_FILESYSTEM  1
 
 #define ngx_open_file(name, mode, create, access)                            \
-    open((const char *) name, mode|create|O_BINARY, access)
+    open_udf((const char *) name, mode|create|O_BINARY, access)
 
 #else
 
 #define ngx_open_file(name, mode, create, access)                            \
-    open((const char *) name, mode|create, access)
+    open_udf((const char *) name, mode|create, access)
 
 #endif
 

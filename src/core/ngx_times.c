@@ -28,6 +28,10 @@ volatile ngx_time_t     *ngx_cached_time;
 volatile ngx_str_t       ngx_cached_err_log_time;
 volatile ngx_str_t       ngx_cached_http_time;
 volatile ngx_str_t       ngx_cached_http_log_time;
+volatile ngx_str_t       ngx_cached_http_log_date_udf;
+volatile ngx_str_t       ngx_cached_http_log_year_udf;
+volatile ngx_str_t       ngx_cached_http_log_month_udf;
+volatile ngx_str_t       ngx_cached_http_log_day_udf;
 volatile ngx_str_t       ngx_cached_http_log_iso8601;
 
 #if !(NGX_WIN32)
@@ -48,6 +52,14 @@ static u_char            cached_http_time[NGX_TIME_SLOTS]
                                     [sizeof("Mon, 28 Sep 1970 06:00:00 GMT")];
 static u_char            cached_http_log_time[NGX_TIME_SLOTS]
                                     [sizeof("28/Sep/1970:12:00:00 +0600")];
+static u_char            cached_http_log_date_udf[NGX_TIME_SLOTS]
+                                    [sizeof("2014-01-01")];
+static u_char            cached_http_log_year_udf[NGX_TIME_SLOTS]
+                                    [sizeof("2014")];
+static u_char            cached_http_log_month_udf[NGX_TIME_SLOTS]
+                                    [sizeof("01")];
+static u_char            cached_http_log_day_udf[NGX_TIME_SLOTS]
+                                    [sizeof("01")];
 static u_char            cached_http_log_iso8601[NGX_TIME_SLOTS]
                                     [sizeof("1970-09-28T12:00:00+06:00")];
 
@@ -62,6 +74,10 @@ ngx_time_init(void)
     ngx_cached_err_log_time.len = sizeof("1970/09/28 12:00:00") - 1;
     ngx_cached_http_time.len = sizeof("Mon, 28 Sep 1970 06:00:00 GMT") - 1;
     ngx_cached_http_log_time.len = sizeof("28/Sep/1970:12:00:00 +0600") - 1;
+    ngx_cached_http_log_date_udf.len = sizeof("2014-01-01") - 1;
+    ngx_cached_http_log_year_udf.len = sizeof("2014") - 1;
+    ngx_cached_http_log_month_udf.len = sizeof("01") - 1;
+    ngx_cached_http_log_day_udf.len = sizeof("01") - 1;
     ngx_cached_http_log_iso8601.len = sizeof("1970-09-28T12:00:00+06:00") - 1;
 
     ngx_cached_time = &cached_time[0];
@@ -73,7 +89,7 @@ ngx_time_init(void)
 void
 ngx_time_update(void)
 {
-    u_char          *p0, *p1, *p2, *p3;
+    u_char          *p0, *p1, *p2, *p3, *p4, *p5, *p6, *p7;
     ngx_tm_t         tm, gmt;
     time_t           sec;
     ngx_uint_t       msec;
@@ -166,6 +182,24 @@ ngx_time_update(void)
                        tp->gmtoff < 0 ? '-' : '+',
                        ngx_abs(tp->gmtoff / 60), ngx_abs(tp->gmtoff % 60));
 
+	p4 = &cached_http_log_date_udf[slot][0];
+
+    (void) ngx_sprintf(p4, "%4d-%02d-%02d",
+                       tm.ngx_tm_year, tm.ngx_tm_mon,
+                       tm.ngx_tm_mday);
+
+	p5 = &cached_http_log_year_udf[slot][0];
+
+    (void) ngx_sprintf(p5, "%4d", tm.ngx_tm_year);
+
+	p6 = &cached_http_log_month_udf[slot][0];
+
+    (void) ngx_sprintf(p6, "%02d", tm.ngx_tm_mon);
+
+	p7 = &cached_http_log_day_udf[slot][0];
+
+    (void) ngx_sprintf(p7, "%02d", tm.ngx_tm_mday);
+
 
     ngx_memory_barrier();
 
@@ -174,6 +208,10 @@ ngx_time_update(void)
     ngx_cached_err_log_time.data = p1;
     ngx_cached_http_log_time.data = p2;
     ngx_cached_http_log_iso8601.data = p3;
+    ngx_cached_http_log_date_udf.data = p4;
+    ngx_cached_http_log_year_udf.data = p5;
+    ngx_cached_http_log_month_udf.data = p6;
+    ngx_cached_http_log_day_udf.data = p7;
 
     ngx_unlock(&ngx_time_lock);
 }

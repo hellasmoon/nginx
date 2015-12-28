@@ -127,6 +127,14 @@ static ngx_int_t ngx_http_variable_time_iso8601(ngx_http_request_t *r,
     ngx_http_variable_value_t *v, uintptr_t data);
 static ngx_int_t ngx_http_variable_time_local(ngx_http_request_t *r,
     ngx_http_variable_value_t *v, uintptr_t data);
+static ngx_int_t ngx_http_variable_date_udf(ngx_http_request_t *r,
+    ngx_http_variable_value_t *v, uintptr_t data);
+static ngx_int_t ngx_http_variable_year_udf(ngx_http_request_t *r,
+    ngx_http_variable_value_t *v, uintptr_t data);
+static ngx_int_t ngx_http_variable_month_udf(ngx_http_request_t *r,
+    ngx_http_variable_value_t *v, uintptr_t data);
+static ngx_int_t ngx_http_variable_day_udf(ngx_http_request_t *r,
+    ngx_http_variable_value_t *v, uintptr_t data);
 
 /*
  * TODO:
@@ -320,6 +328,18 @@ static ngx_http_variable_t  ngx_http_core_variables[] = {
       0, NGX_HTTP_VAR_NOCACHEABLE, 0 },
 
     { ngx_string("time_local"), NULL, ngx_http_variable_time_local,
+      0, NGX_HTTP_VAR_NOCACHEABLE, 0 },
+
+    { ngx_string("date_udf"), NULL, ngx_http_variable_date_udf,
+      0, NGX_HTTP_VAR_NOCACHEABLE, 0 },
+
+    { ngx_string("year_udf"), NULL, ngx_http_variable_year_udf,
+      0, NGX_HTTP_VAR_NOCACHEABLE, 0 },
+
+    { ngx_string("month_udf"), NULL, ngx_http_variable_month_udf,
+      0, NGX_HTTP_VAR_NOCACHEABLE, 0 },
+
+    { ngx_string("day_udf"), NULL, ngx_http_variable_day_udf,
       0, NGX_HTTP_VAR_NOCACHEABLE, 0 },
 
 #if (NGX_HAVE_TCP_INFO)
@@ -2166,6 +2186,98 @@ ngx_http_variable_time_local(ngx_http_request_t *r,
     ngx_memcpy(p, ngx_cached_http_log_time.data, ngx_cached_http_log_time.len);
 
     v->len = ngx_cached_http_log_time.len;
+    v->valid = 1;
+    v->no_cacheable = 0;
+    v->not_found = 0;
+    v->data = p;
+
+    return NGX_OK;
+}
+
+
+static ngx_int_t
+ngx_http_variable_date_udf(ngx_http_request_t *r,
+    ngx_http_variable_value_t *v, uintptr_t data)
+{
+    u_char  *p;
+
+    p = ngx_pnalloc(r->pool, ngx_cached_http_log_date_udf.len);
+    if (p == NULL) {
+        return NGX_ERROR;
+    }
+
+    ngx_memcpy(p, ngx_cached_http_log_date_udf.data, ngx_cached_http_log_date_udf.len);
+
+    v->len = ngx_cached_http_log_date_udf.len;
+    v->valid = 1;
+    v->no_cacheable = 0;
+    v->not_found = 0;
+    v->data = p;
+
+    return NGX_OK;
+}
+
+
+static ngx_int_t
+ngx_http_variable_year_udf(ngx_http_request_t *r,
+    ngx_http_variable_value_t *v, uintptr_t data)
+{
+    u_char  *p;
+
+    p = ngx_pnalloc(r->pool, ngx_cached_http_log_year_udf.len);
+    if (p == NULL) {
+        return NGX_ERROR;
+    }
+
+    ngx_memcpy(p, ngx_cached_http_log_year_udf.data, ngx_cached_http_log_year_udf.len);
+
+    v->len = ngx_cached_http_log_year_udf.len;
+    v->valid = 1;
+    v->no_cacheable = 0;
+    v->not_found = 0;
+    v->data = p;
+
+    return NGX_OK;
+}
+
+
+static ngx_int_t
+ngx_http_variable_month_udf(ngx_http_request_t *r,
+    ngx_http_variable_value_t *v, uintptr_t data)
+{
+    u_char  *p;
+
+    p = ngx_pnalloc(r->pool, ngx_cached_http_log_month_udf.len);
+    if (p == NULL) {
+        return NGX_ERROR;
+    }
+
+    ngx_memcpy(p, ngx_cached_http_log_month_udf.data, ngx_cached_http_log_month_udf.len);
+
+    v->len = ngx_cached_http_log_month_udf.len;
+    v->valid = 1;
+    v->no_cacheable = 0;
+    v->not_found = 0;
+    v->data = p;
+
+    return NGX_OK;
+}
+
+
+static ngx_int_t
+ngx_http_variable_day_udf(ngx_http_request_t *r,
+    ngx_http_variable_value_t *v, uintptr_t data)
+{
+    u_char  *p;
+
+    p = ngx_pnalloc(r->pool, ngx_cached_http_log_day_udf.len);
+    if (p == NULL) {
+        return NGX_ERROR;
+    }
+
+    ngx_memcpy(p, ngx_cached_http_log_day_udf.data, ngx_cached_http_log_day_udf.len);
+
+    v->len = ngx_cached_http_log_day_udf.len;
     v->valid = 1;
     v->no_cacheable = 0;
     v->not_found = 0;
